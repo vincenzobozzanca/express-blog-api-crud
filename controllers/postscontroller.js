@@ -3,7 +3,11 @@ const arrayPosts = require("../posts");
 
 //index --> GET
 const index = (req, res) => {
-    res.json(arrayPosts);
+    let filterPosts = posts;
+    if (req.query.tag) {
+        filterPosts = posts.filter((curPosts) => curPosts.tags.includes(req.query.tag.toLowerCase()))
+    }
+    res.json(filterPosts);
 }
 
 
@@ -11,26 +15,31 @@ const index = (req, res) => {
 const show = (req, res) => {
     const postId = parseInt(req.params.id);
     const findPost = arrayPosts.find(curItem => curItem.id === postId);
-    if (findPost === undefined) {
-      res.statusCode = 404;
-      res.json(`Il post con id ${postId} non esiste`);
-    } else {
         res.json(findPost);
     }
-}
 
 
 //create --> POST
 const create = (req, res) => {
-    res.json("Creazione del nuovo post");
+    console.log(req.body);
+    const newPost = req.body;
+    newPost.id = arrayPosts[arrayPosts.length - 1].id + 1; //calcolo il successivo id
+    arrayPosts.push(newPost);
+    res.status(201);  //stato per qualcosa di nuovo
+    res.json(newPost);
 }
 
 
 //update --> PUT
 const update = (req, res) => {
-    const postId = req.params.id;
-    res.json("Aggiornamento del post " + postId);
-}
+    const postId = parseInt(req.params.id);
+    const newPost = req.body;
+    console.log(newPost);
+    const indexToUpdate = arrayPosts.findIndex((curPost) => curPost.id === postId); //trovo l'indice da modificare
+    newPost.id = postId;
+    arrayPosts[indexToUpdate] = newPost;
+    res.json(newPost);
+    }
 
 
 //modify --> PATCH
@@ -44,23 +53,10 @@ const modify = (req, res) => {
 const destroy = (req, res) => {
     const postId = parseInt(req.params.id);
     const arrayIndex = arrayPosts.findIndex((curArray) => curArray.id === postId); //trovo l'indice dell'array
-    if (arrayIndex === -1) {
-        res.statusCode(404);
-        res.json({
-            message: "Post non trovato"
-        })
-    }
-	else if (arrayIndex === undefined) {
-		res.statusCode = 404;
-		res.json(`Il post con id ${postId} non esiste`);
-	}else {
     arrayPosts.splice(arrayIndex, 1);
     console.log(arrayPosts);
     res.sendStatus(204);
  }
-}
-
-
 
 
 //////ESPORTO TUTTO///////
